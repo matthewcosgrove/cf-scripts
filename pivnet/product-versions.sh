@@ -28,7 +28,7 @@ do
 
 	final_version_list=$(echo "$sorted_version_list" | head -$no_of_versions)
 	echo 
-	echo "Latest $no_of_versions versions of $product_name are "$final_version_list""
+	echo "Latest $no_of_versions versions of \"$product_name\":"$final_version_list""
 done
 
 

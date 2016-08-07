@@ -1,0 +1,5 @@
+{
+  "elastic-runtime": "1.7.4",
+  "p-mysql": "1.0.9",
+  "elastic-runtime-blah": "1.7.10"
+}
