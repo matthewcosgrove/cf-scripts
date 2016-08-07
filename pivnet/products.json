@@ -1,7 +1,7 @@
 {
   "elastic-runtime":"1.7.13",
   "ops-metrics":"1.7.2",
-  "p-mysql": "1.7.11",
+  "p-mysql": "1.7.10",
   "p-spring-cloud-services":"1.1.1",
   "pivotal-rabbitmq":"3.5.6",
   "p-identity":"1.1.1"
