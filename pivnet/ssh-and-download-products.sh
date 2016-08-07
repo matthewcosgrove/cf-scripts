@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+CF_OPS_MAN_GUI_SSH_PORT="${CF_OPS_MAN_GUI_SSH_PORT:-22}"
+
 source_file=products.json
 script_destination="/home/ubuntu"
 echo "Copying file $source_file to Ops Manager $script_destination"
