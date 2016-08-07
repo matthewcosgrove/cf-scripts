@@ -14,9 +14,8 @@ echo "To override defaults..."
 echo "1) create env var CF_PIVNET_PRODUCTS as a space seperated set of 'slug' from https://network.pivotal.io/api/v2/products/"
 echo "2) pass in an arg to set the amount of previous versions to show for each product"
 echo "Getting versions for products: $CF_PIVNET_PRODUCTS"
-for i in "${arr[@]}"
+for product_name in "${arr[@]}"
 do
-	product_name=$i
 	product_response=$(curl -s "https://network.pivotal.io/api/v2/products/$product_name/releases")
 
 	raw_array=$(echo "$product_response" | jq .releases[])
