@@ -8,6 +8,7 @@ if [[ $BASH_VERSION != 4* ]] ; then
 	echo "NB: Might be error prone when Bash 5 is released ;-)"
 fi
 : ${CF_PIVNET_TOKEN:?"Need to set CF_PIVNET_TOKEN non-empty where token can be retrieved from edit-profile page of network.pivotal.io"}
+: ${CF_BINARY_STORE:?"Need to set CF_BINARY_STORE non-empty"}
 
 declare -A arr
 while IFS="=" read -r key value
@@ -34,6 +35,6 @@ do
 	else
 		link_product_download=$(echo "$product_files_response" | jq -r .product_files[0]._links.download.href)
 	fi
-	wget -O "${product_name}-${product_version}.pivotal" --post-data="" --header="Authorization: Token ${CF_PIVNET_TOKEN}" ${link_product_download}
+	wget -P $CF_BINARY_STORE -O "${product_name}-${product_version}.pivotal" --post-data="" --header="Authorization: Token ${CF_PIVNET_TOKEN}" ${link_product_download}
 done
 
