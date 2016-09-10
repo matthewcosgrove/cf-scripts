@@ -5,6 +5,7 @@ jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" products.json
 
 if [[ $BASH_VERSION != 4* ]] ; then
 	echo "Error: Use of associative arrays requires Bash 4. Detected version $BASH_VERSION"
+	echo "NB: Might be error prone when Bash 5 is released ;-)"
 fi
 : ${CF_PIVNET_TOKEN:?"Need to set CF_PIVNET_TOKEN non-empty where token can be retrieved from edit-profile page of network.pivotal.io"}
 
@@ -28,7 +29,11 @@ do
 	echo
 	link_product_files=$(echo $product_release | jq -r ._links.product_files.href)
 	product_files_response=$(curl -sfS "$link_product_files")
-	link_product_download=$(echo "$product_files_response" | jq -r .product_files[0]._links.download.href)
+	if [[ $product_name = "elastic-runtime" ]] ; then
+		link_product_download=$(echo "$product_files_response" | jq [.product_files[]] | jq --arg name "PCF Elastic Runtime" '.[]  | select(.name==$name)' | jq -r ._links.download.href)
+	else
+		link_product_download=$(echo "$product_files_response" | jq -r .product_files[0]._links.download.href)
+	fi
 	wget -O "${product_name}-${product_version}.pivotal" --post-data="" --header="Authorization: Token ${CF_PIVNET_TOKEN}" ${link_product_download}
 done
 
