@@ -29,41 +29,41 @@ function getProductRelease {
 echo "Validating config and PivNet API e.g. checking versions exist and urls are consistent"
 for product_name in "${!arr[@]}"
 do
-    product_version=${arr[$product_name]}
-    echo "Checking $product_name = $product_version" 
-    product_release=$(getProductRelease $product_name $product_version)
-    hasVersion=$(echo $product_release | jq '. | has("id")')
-    if [[ "$hasVersion" != "true" ]] ; then
-    	echo "Please check version $product_version of $product_name and try again"
-    	exit 1
-    fi
-    link_product_files=$(echo $product_release | jq -r ._links.product_files.href)
-    product_files_response=$(curl -sfS "$link_product_files")
-    product_files_array=$(echo "$product_files_response" | jq [.product_files[]])
-    #echo $product_files_array
-    product_files_array_size=$(echo $product_files_array | jq '. | length')
-    echo $product_files_array_size
+	product_version=${arr[$product_name]}
+	echo "Checking $product_name = $product_version"
+	product_release=$(getProductRelease $product_name $product_version)
+	hasVersion=$(echo $product_release | jq '. | has("id")')
+	if [[ "$hasVersion" != "true" ]] ; then
+		echo "Please check version $product_version of $product_name and try again"
+		exit 1
+	fi
+	link_product_files=$(echo $product_release | jq -r ._links.product_files.href)
+	product_files_response=$(curl -sfS "$link_product_files")
+	product_files_array=$(echo "$product_files_response" | jq [.product_files[]])
+	product_files_array_size=$(echo $product_files_array | jq '. | length')
+	echo $product_files_array_size
 	if [[ $product_files_array_size = 0 ]] ; then 
-    	echo $link_product_files
-    	echo "the above link has no product files for $product_name $product_version, raise a support case at support.pivotal.io"
-    	echo "In the meantime, try a different version or remove from input and download manually. NOTE: Rabbit MQ is missing the link on all versions at the time of writing (See https://network.pivotal.io/api/v2/products/pivotal-rabbitmq/releases/)"
-    	exit 1
-    fi
-    if [[ $product_files_array_size > 1 ]] ; then
-    	if [[ $product_name = "elastic-runtime" || $product_name = "ops-metrics" ]] ; then
-    		echo "$product_name supported with array size $product_files_array_size, will continue.."
-    	else
-    		nameOfZeroIndex=$(echo $product_files_array | jq -r .[0].aws_object_key)
-    		echo "Product files array size = $nameOfZeroIndex"
-    		if [[ $nameOfZeroIndex == *.pivotal ]] ; then
-    			echo "$product_name supported with array size $product_files_array_size as the .pivotal file is in expected location of index 0, will continue.."
-    		else 
-    			echo "$product_name $product_version not supported as .pivotal file not at index 0 as expected. Please update script or remove product from input"
-    			exit 1
-    		fi
-    	fi
-    fi
-    link_product_files=$(echo $product_release | jq -r ._links.product_files.href)
+		echo $link_product_files
+		echo "the above link has no product files for $product_name $product_version, raise a support case at support.pivotal.io"
+		echo "In the meantime, try a different version or remove from input and download manually. NOTE: Rabbit MQ is missing the link on all versions at the time of writing (See https://network.pivotal.io/api/v2/products/pivotal-rabbitmq/releases/)"
+		exit 1
+	fi
+	if [[ $product_files_array_size > 1 ]] ; then
+		echo "Multiple product files detected. Need to do some convoluted stuff with the response array.."
+		if [[ $product_name = "elastic-runtime" || $product_name = "ops-metrics" ]] ; then
+			echo "Specific support for $product_name has been added (it has array size $product_files_array_size), so the product will be processed"
+		else
+			nameOfZeroIndex=$(echo $product_files_array | jq -r .[0].aws_object_key)
+			echo "Product files array size = $nameOfZeroIndex"
+			if [[ $nameOfZeroIndex == *.pivotal ]] ; then
+				echo "$product_name has array size $product_files_array_size but the .pivotal file is in expected location of index 0, so the product will be processed"
+			else
+				echo "$product_name $product_version not supported as .pivotal file not at index 0 as expected. Please update script or remove product from products.json input file"
+				exit 1
+			fi
+		fi
+	fi
+	link_product_files=$(echo $product_release | jq -r ._links.product_files.href)
 	product_files_response=$(curl -sfS "$link_product_files")
 	if [[ $product_name = "elastic-runtime" ]] ; then
 		link_product_download=$(echo "$product_files_response" | jq [.product_files[]] | jq --arg name "PCF Elastic Runtime" '.[]  | select(.name==$name)' | jq -r ._links.download.href)
@@ -77,15 +77,15 @@ done
 
 for product_name in "${!arr[@]}"
 do
-    product_version=${arr[$product_name]}
-    file_loc_and_name=$CF_BINARY_STORE/"${product_name}-${product_version}.pivotal"
-    if [[ -f $file_loc_and_name ]] ; then
-    	echo "File $file_loc_and_name already downloaded so skipping"
-    	continue
-    fi
-    echo "Handling $product_name = $product_version"
-    product_release=$(getProductRelease $product_name $product_version)
-    link_eula=$(echo $product_release | jq -r ._links.eula_acceptance.href)
+	product_version=${arr[$product_name]}
+	file_loc_and_name=$CF_BINARY_STORE/"${product_name}-${product_version}.pivotal"
+	if [[ -f $file_loc_and_name ]] ; then
+		echo "File $file_loc_and_name already downloaded so skipping"
+		continue
+	fi
+	echo "Handling $product_name = $product_version"
+	product_release=$(getProductRelease $product_name $product_version)
+	link_eula=$(echo $product_release | jq -r ._links.eula_acceptance.href)
 	echo "Accepting EULA at $link_eula"
 	curl -s -X POST ${link_eula} --header "Authorization: Token ${CF_PIVNET_TOKEN}"
 	echo
