@@ -9,9 +9,10 @@ CF_OPS_MAN_GUI_SSH_PORT="${CF_OPS_MAN_GUI_SSH_PORT:-22}"
 
 if hash ssh-copy-id &>/dev/null
 	then
-    	echo "ssh-copy-id is installed"
+		echo "ssh-copy-id is installed"
 	else
-		echo "ssh-copy-id install required.. e.g. brew install ssh-copy-id"
+		echo "Exiting as ssh-copy-id install required.. e.g. brew install ssh-copy-id"
+		exit 1
 fi
 
 ssh-copy-id ubuntu@$CF_OPS_MAN_GUI_HOST -p $CF_OPS_MAN_GUI_SSH_PORT
