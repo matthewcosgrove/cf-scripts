@@ -19,7 +19,8 @@ done < <(jq -r "to_entries|map(\"\(.key)=\(.value)\")|.[]" products.json)
 function getProductRelease {
 	product_name=$1
 	product_version=$2
-	product_response=$(curl -sfS "https://network.pivotal.io/api/v2/products/$product_name/releases")
+	releases="https://network.pivotal.io/api/v2/products/$product_name/releases"
+	product_response=$(curl -sfS "$releases")
 	product_releases_raw_array=$(echo "$product_response" | jq [.releases[]])
 	product_release=$(echo "$product_releases_raw_array" | jq --arg version "$product_version" '.[]  | select(.version==$version)')
 	
@@ -34,7 +35,8 @@ do
 	product_release=$(getProductRelease $product_name $product_version)
 	hasVersion=$(echo $product_release | jq '. | has("id")')
 	if [[ "$hasVersion" != "true" ]] ; then
-		echo "Please check version $product_version of $product_name and try again"
+		releases="https://network.pivotal.io/api/v2/products/$product_name/releases"
+		echo "Please check version $product_version of $product_name exists at $releases and try again"
 		exit 1
 	fi
 	link_product_files=$(echo $product_release | jq -r ._links.product_files.href)
@@ -46,6 +48,7 @@ do
 		echo $link_product_files
 		echo "the above link has no product files for $product_name $product_version, raise a support case at support.pivotal.io"
 		echo "In the meantime, try a different version or remove from input and download manually. NOTE: Rabbit MQ is missing the link on all versions at the time of writing (See https://network.pivotal.io/api/v2/products/pivotal-rabbitmq/releases/)"
+		echo "Apologies, but we need to exit, please retry again once you have dealt with this issue"
 		exit 1
 	fi
 	if [[ $product_files_array_size > 1 ]] ; then
