@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -e
 echo "About to download products.."
 jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" products.json
 
@@ -16,34 +16,38 @@ do
     arr[$key]="$value"
 done < <(jq -r "to_entries|map(\"\(.key)=\(.value)\")|.[]" products.json)
 
-function getProductRelease {
-	product_name=$1
-	product_version=$2
-	releases="https://network.pivotal.io/api/v2/products/$product_name/releases"
-	product_response=$(curl -sfS "$releases")
-	product_releases_raw_array=$(echo "$product_response" | jq [.releases[]])
-	product_release=$(echo "$product_releases_raw_array" | jq --arg version "$product_version" '.[]  | select(.version==$version)')
-	
-	echo $product_release
-}
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+if [[ -f $DIR/helpers.sh ]] ; then
+		source "$DIR/helpers.sh"
+		echo "Sourced $DIR/helpers.sh"
+	else
+		echo "Skipping source of helper script"
+fi
 
-echo "Validating config and PivNet API e.g. checking versions exist and urls are consistent"
-for product_name in "${!arr[@]}"
+echo "*****************************************************************************************"
+echo "* Validating config and PivNet API e.g. checking versions exist and urls are consistent *"
+echo "*****************************************************************************************"
+for product_name_with_alias in "${!arr[@]}"
 do
-	product_version=${arr[$product_name]}
-	echo "Checking $product_name = $product_version"
+	product_version=${arr[$product_name_with_alias]}
+	echo "Checking $product_name_with_alias = $product_version"
+	name=$(extractTileName $product_name_with_alias)
+	product_name=$(extractProductName $product_name_with_alias)
 	product_release=$(getProductRelease $product_name $product_version)
 	hasVersion=$(echo $product_release | jq '. | has("id")')
 	if [[ "$hasVersion" != "true" ]] ; then
 		releases="https://network.pivotal.io/api/v2/products/$product_name/releases"
+		echo
 		echo "Please check version $product_version of $product_name exists at $releases and try again"
 		exit 1
 	fi
 	link_product_files=$(echo $product_release | jq -r ._links.product_files.href)
+	echo "Product files for tile with tile name as $name and product name as $product_name will be assessed.."
+	echo $link_product_files
 	product_files_response=$(curl -sfS "$link_product_files")
 	product_files_array=$(echo "$product_files_response" | jq [.product_files[]])
 	product_files_array_size=$(echo $product_files_array | jq '. | length')
-	echo $product_files_array_size
+	echo "No. of product files found is $product_files_array_size"
 	if [[ $product_files_array_size = 0 ]] ; then 
 		echo $link_product_files
 		echo "the above link has no product files for $product_name $product_version, raise a support case at support.pivotal.io"
@@ -77,17 +81,29 @@ do
 	fi
 	echo "Will be downloading from $link_product_download"
 done
-
-for product_name in "${!arr[@]}"
+echo "************************************************"
+echo "* Validation complete. Downloads commencing... *"
+echo "************************************************"
+for product_name_with_alias in "${!arr[@]}"
 do
-	product_version=${arr[$product_name]}
-	file_loc_and_name=$CF_BINARY_STORE/"${product_name}-${product_version}.pivotal"
+	product_version=${arr[$product_name_with_alias]}
+	tile_name=$(extractTileName $product_name_with_alias)
+	echo "Extracted Tile Name as $name"
+	file_name=$(generateFileName ${tile_name} ${product_version})
+	file_loc_and_name=$CF_BINARY_STORE/"$file_name"
+	echo "File destination determined as $file_loc_and_name"
 	if [[ -f $file_loc_and_name ]] ; then
 		echo "File $file_loc_and_name already downloaded so skipping"
 		continue
 	fi
-	echo "Handling $product_name = $product_version"
+	echo "Handling $product_name_with_alias = $product_version"
+	product_name=$(extractProductName $product_name_with_alias)
+	echo "Extracted Product Name as $product_name"
+
 	product_release=$(getProductRelease $product_name $product_version)
+	echo
+	echo "Product release is at $product_release"
+	echo
 	link_eula=$(echo $product_release | jq -r ._links.eula_acceptance.href)
 	echo "Accepting EULA at $link_eula"
 	curl -s -X POST ${link_eula} --header "Authorization: Token ${CF_PIVNET_TOKEN}"
