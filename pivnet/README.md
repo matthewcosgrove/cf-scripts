@@ -8,7 +8,9 @@ The recommended approach is to use the ssh wrapper scripts which are written spe
 3. ./ssh-and-download-products.sh
 4. ./ssh-and-upload-products.sh
 
-\* - the format of the product name fits the quirks of the API url formats and is strict! The input is a simple json file with "product-name":"version" where the product-name is in the format "name;product-alias". Breaking this down, 'name' prior to the semi-colon, is the tile or product name as returned within the json response of 'https://$CF_OPS_MAN_GUI_HOST/api/v0/available_products' as the name as seen in this sample json response..
+\* WARNING (Dirty workaround) the format of the product name in the products.json uses a workaround for the quirks of the Ops Manager API url formats. It is strict! 
+The input is a simple json file with "product-name":"version" where the product-name is in the format "name;product-alias". Breaking this down, 'name' prior to the semi-colon, is the tile or product name as returned within the json response of 'https://$CF_OPS_MAN_GUI_HOST/api/v0/available_products' as the name as seen in this sample json response..
+
 ```json
 [
 {
@@ -33,4 +35,4 @@ The product-alias, after the semi-colon, is used formulate the download url. For
 
 So the alias is only used for the initial urls, and when it comes to naming the binaries which get uploaded, those are named according to the approach seen above for 'https://$CF_OPS_MAN_GUI_HOST/api/v0/available_products'
  
-If you use the underlying scripts directly instead of the ssh wrapper scripts, be careful about where they are run, as latency will likely defy any attempts. A VM with internet access on the same network as OpsManager is best.
+If you use the underlying scripts directly instead of the ssh wrapper scripts (which are for running direct on the Ops Manager VM), be careful about where they are run, as latency will likely defy any attempts. A VM with internet access on the same network as OpsManager is best.
