@@ -8,6 +8,8 @@ The recommended approach is to use the ssh wrapper scripts which are written spe
 3. ./ssh-and-download-products.sh
 4. ./ssh-and-upload-products.sh
 
+TIP: For fasttrack login use ../set-up-ssh-copy-key.sh to upload your ssh key to Ops Manager prior to running the scripts in steps 3 & 4.
+
 \* WARNING (Dirty workaround) the format of the product name in the products.json uses a workaround for the quirks of the Ops Manager API url formats. It is strict! 
 The input is a simple json file with "product-name":"version" where the product-name is in the format "name;product-alias". Breaking this down, 'name' prior to the semi-colon, is the tile or product name as returned within the json response of 'https://$CF_OPS_MAN_GUI_HOST/api/v0/available_products' as the name as seen in this sample json response..
 

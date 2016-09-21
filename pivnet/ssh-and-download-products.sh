@@ -6,7 +6,7 @@ CF_OPS_MAN_GUI_SSH_PORT="${CF_OPS_MAN_GUI_SSH_PORT:-22}"
 
 source_file=products.json
 script_destination="/home/ubuntu"
-echo "Copying file $source_file to Ops Manager $script_destination"
+echo "Copying file $source_file to Ops Manager $script_destination. TIP: For fasttrack login use ../set-up-ssh-copy-key.sh to upload your ssh key to Ops Manager"
 scp -P $CF_OPS_MAN_GUI_SSH_PORT $source_file ubuntu@$CF_OPS_MAN_GUI_HOST:$script_destination
 
 # ssh username@machine VAR=value cmd cmdargs
