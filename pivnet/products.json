@@ -1,21 +1,7 @@
 {
-<<<<<<< HEAD
   "elastic-runtime":"1.7.15",
   "ops-metrics":"1.7.3",
-  "p-mysql": "1.7.9",
-<<<<<<< HEAD
-  "p-spring-cloud-services":"1.1.1",
-<<<<<<< HEAD
-  "p-identity":"1.1.1"
-=======
-  "pivotal-rabbitmq":"3.5.6"
->>>>>>> 2bfc29b... Changed product versions
-=======
-=======
-  "cf;elastic-runtime":"1.7.15",
-  "p-metrics;ops-metrics":"1.7.3",
   "p-mysql": "1.7.10",
->>>>>>> b9e0e6d... New naming conventions needed for latest refactoring of downloads from pivnet
-  "p-spring-cloud-services":"1.1.1"
->>>>>>> 6d3509b... Finishing automation of uploading products
+  "p-spring-cloud-services":"1.1.1",
+  "p-identity":"1.1.1"
 }
