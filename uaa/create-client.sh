@@ -1,26 +1,15 @@
 #!/usr/bin/env bash
 set -e
-: ${CF_NEW_CLIENT_ID:?"Need to set CF_NEW_CLIENT_ID non-empty"}
-: ${CF_NEW_CLIENT_SECRET:?"Need to set CF_NEW_CLIENT_SECRET non-empty"}
+: ${CF_UAA_NEW_CLIENT_ID:?"Need to set CF_UAA_NEW_CLIENT_ID non-empty"}
+: ${CF_UAA_NEW_CLIENT_SECRET:?"Need to set CF_UAA_NEW_CLIENT_SECRET non-empty"}
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "${SCRIPT_DIR}/export-uaa-pre-requisites.sh"
 : ${CF_UAA_HOST:?"Need to set CF_UAA_HOST non-empty"}
-: ${CF_ADMIN_CLIENT_PASS:?"Need to set CF_ADMIN_CLIENT_PASS non-empty"}
+: ${CF_UAA_ACCESS_TOKEN:?"Need to set CF_UAA_ACCESS_TOKEN non-empty"}
+: ${CF_UAA_NEW_CLIENT_AUTHORITIES:?"Need to set CF_UAA_NEW_CLIENT_AUTHORITIES non-empty"}
 
-new_client_id=$CF_NEW_CLIENT_ID
-new_client_secret=$CF_NEW_CLIENT_SECRET
-user="admin"
-admin_client_password=$CF_ADMIN_CLIENT_PASS
-uaa_host=$CF_UAA_HOST
-echo "Host: $uaa_host"
-# Equivalent to uaac token client get admin -s $admin_client_password --trace
-token_response=$(curl -sk -u admin:$admin_client_password -d grant_type=client_credentials  https://$uaa_host/oauth/token)
-access_token=$(echo $token_response | jq -r .access_token)
-echo $access_token
-
-clients=$(curl -sk -H "Authorization: Bearer $access_token" https://$uaa_host/oauth/clients)
-echo $clients | jq .
-echo
-
-body='{"client_id":"'"$new_client_id"'","client_secret":"'"$new_client_secret"'","name":"'"$new_client_id"'","authorized_grant_types":["client_credentials"],"authorities":["uaa.admin","clients.read","clients.write","clients.secret","scim.read","scim.write","clients.admin"]}'
+body='{"client_id":"'"$CF_UAA_NEW_CLIENT_ID"'","client_secret":"'"$CF_UAA_NEW_CLIENT_SECRET"'","name":"'"$CF_UAA_NEW_CLIENT_ID"'","authorized_grant_types":["client_credentials"],"authorities":['$CF_UAA_NEW_CLIENT_AUTHORITIES']}'
 
 # Equivalent to uaac client add test-client --trace -s thisisourlittlesecret --authorized_grant_types client_credentials --authorities "uaa.admin","clients.read","clients.write","clients.secret","scim.read","scim.write","clients.admin"
-curl -sk -H "Content-Type: application/json" -H "Authorization: bearer $access_token" --data $body https://$uaa_host/oauth/clients
+curl -sk -H "Content-Type: application/json" -H "Authorization: bearer $CF_UAA_ACCESS_TOKEN" --data $body https://$CF_UAA_HOST/oauth/clients
