@@ -51,7 +51,7 @@ do
 	if [[ $product_files_array_size = 0 ]] ; then 
 		echo $link_product_files
 		echo "the above link has no product files for $product_name $product_version, raise a support case at support.pivotal.io"
-		echo "In the meantime, try a different version or remove from input and download manually. NOTE: Rabbit MQ is missing the link on all versions at the time of writing (See https://network.pivotal.io/api/v2/products/pivotal-rabbitmq/releases/)"
+		echo "In the meantime, try a different version or remove from input and download manually. NOTE: Rabbit MQ is not available under pivotal-rabbitmq but pivotal-rabbitmq-service (See https://network.pivotal.io/api/v2/products/pivotal-rabbitmq-service/releases)"
 		echo "Apologies, but we need to exit, please retry again once you have dealt with this issue"
 		exit 1
 	fi
